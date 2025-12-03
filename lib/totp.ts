@@ -25,7 +25,7 @@ function base32Decode(secret: string): Uint8Array {
   
   const bytes = new Uint8Array(Math.floor(bits.length / 8))
   for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(bits.substr(i * 8, 8), 2)
+    bytes[i] = parseInt(bits.substring(i * 8, i * 8 + 8), 2)
   }
   return bytes
 }
@@ -46,13 +46,13 @@ async function hmacSha1(key: Uint8Array, message: Uint8Array): Promise<Uint8Arra
 // Génère un code TOTP à 6 chiffres
 export async function generateTOTP(secret: string, timeStep: number = 30): Promise<string> {
   const key = base32Decode(secret)
-  const time = Math.floor(Date.now() / 1000 / timeStep)
-  
+  let time = Math.floor(Date.now() / 1000 / timeStep)
+
   // Convertir le time en bytes (8 octets, big-endian)
   const timeBytes = new Uint8Array(8)
   for (let i = 7; i >= 0; i--) {
     timeBytes[i] = time & 0xff
-    time >> 8
+    time = Math.floor(time / 256)
   }
   
   const hmac = await hmacSha1(key, timeBytes)

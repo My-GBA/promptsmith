@@ -14,12 +14,22 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Vérifier si déjà authentifié
+  // Vérifier si déjà authentifié via l'API
   useEffect(() => {
-    const isAuth = sessionStorage.getItem('admin_authenticated')
-    if (isAuth === 'true') {
-      router.push('/ads')
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/auth/me')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.authenticated) {
+            router.push('/ads')
+          }
+        }
+      } catch {
+        // Pas authentifié, continuer
+      }
     }
+    checkAuth()
   }, [router])
 
   // Étape 1 : Vérifier le mot de passe (via serveur)
@@ -47,14 +57,15 @@ export default function AdminLoginPage() {
       })
 
       if (res.ok) {
-        sessionStorage.setItem('admin_authenticated', 'true')
+        // Le cookie HTTP-only est défini par le serveur, pas besoin de sessionStorage
         router.push('/ads')
       } else {
         const data = await res.json().catch(() => ({ error: 'Login failed' }))
         setError(data.error || (language === 'fr' ? 'Échec de connexion' : 'Login failed'))
       }
     } catch (err) {
-      setError('Erreur lors de la vérification')
+      const errorMsg = err instanceof Error ? err.message : 'Erreur lors de la vérification'
+      setError(errorMsg)
     }
 
     setLoading(false)

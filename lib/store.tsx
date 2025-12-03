@@ -53,13 +53,25 @@ type State = {
   nextAdvertisement: () => Advertisement | null // Retourne l'annonce suivante et met à jour l'index
 }
 
-// Initialisation des valeurs depuis localStorage
-const initialOpenAIKey = typeof window !== 'undefined' ? localStorage.getItem('OPENAI_API_KEY') : null
+// Initialisation des valeurs depuis localStorage avec gestion d'erreur
+const initialOpenAIKey = typeof window !== 'undefined' ? sessionStorage.getItem('OPENAI_API_KEY') : null
 const initialLang = (typeof window !== 'undefined' ? localStorage.getItem('LANGUAGE') : 'fr') as Language
 const initialOpenAIModel = (typeof window !== 'undefined' ? localStorage.getItem('OPENAI_MODEL') : 'gpt-4o') || 'gpt-4o'
-const initialHistory: PromptHistory[] = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('PROMPT_HISTORY') || '[]') : []
-const initialFavorites: string[] = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('PROMPT_FAVORITES') || '[]') : []
-const initialAdvertisements: Advertisement[] = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('ADVERTISEMENTS') || '[]') : []
+
+// JSON.parse sécurisé avec try-catch
+const safeJSONParse = <T,>(key: string, fallback: T): T => {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const data = localStorage.getItem(key)
+    return data ? JSON.parse(data) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+const initialHistory: PromptHistory[] = safeJSONParse('PROMPT_HISTORY', [])
+const initialFavorites: string[] = safeJSONParse('PROMPT_FAVORITES', [])
+const initialAdvertisements: Advertisement[] = safeJSONParse('ADVERTISEMENTS', [])
 
 // Création du store Zustand
 const useStore = create<State>((set, get) => ({
@@ -96,11 +108,11 @@ const useStore = create<State>((set, get) => ({
     set({ language: lang })
   },
   
-  // ===== OPENAI KEY SETTER (avec persistence) =====
+  // ===== OPENAI KEY SETTER (avec persistence en sessionStorage pour sécurité) =====
   setOpenAIKey: (k) => {
     try {
-      if (k) localStorage.setItem('OPENAI_API_KEY', k)
-      else localStorage.removeItem('OPENAI_API_KEY')
+      if (k) sessionStorage.setItem('OPENAI_API_KEY', k)
+      else sessionStorage.removeItem('OPENAI_API_KEY')
     } catch (e) {}
     set({ openaiKey: k })
   },
@@ -115,7 +127,8 @@ const useStore = create<State>((set, get) => ({
   
   // ===== HISTORY FUNCTIONS =====
   addToHistory: (entry) => set((s) => {
-    const newHistory = [{ ...entry, id: Date.now().toString() }, ...s.history]
+    const MAX_HISTORY = 100
+    const newHistory = [{ ...entry, id: Date.now().toString() }, ...s.history].slice(0, MAX_HISTORY)
     try {
       localStorage.setItem('PROMPT_HISTORY', JSON.stringify(newHistory))
     } catch (e) {}
@@ -192,16 +205,29 @@ const useStore = create<State>((set, get) => ({
   nextAdvertisement: () => {
     const state = get()
     const activeAds = state.advertisements.filter(ad => ad.isActive)
-    
+
     if (activeAds.length === 0) {
       return null
     }
-    
+
+    // Trouve l'annonce active actuelle dans le tableau filtré
+    const currentAd = state.advertisements[state.currentAdIndex]
+    let currentActiveIdx = activeAds.findIndex(ad => ad.id === currentAd?.id)
+
+    // Si l'annonce actuelle n'est pas active ou n'existe pas, commencer à 0
+    if (currentActiveIdx === -1) {
+      currentActiveIdx = 0
+    }
+
     // Calcule l'index suivant avec modulo pour la rotation
-    const nextIdx = (state.currentAdIndex + 1) % activeAds.length
-    set({ currentAdIndex: nextIdx })
-    
-    return activeAds[nextIdx]
+    const nextActiveIdx = (currentActiveIdx + 1) % activeAds.length
+    const nextAd = activeAds[nextActiveIdx]
+
+    // Trouve l'index global de cette annonce
+    const globalIdx = state.advertisements.findIndex(ad => ad.id === nextAd.id)
+    set({ currentAdIndex: globalIdx })
+
+    return nextAd
   }
 }))
 

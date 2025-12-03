@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import useStore from '../lib/store'
-import { translations } from '../lib/translations'
+import { translations, Language } from '../lib/translations'
 
 const OPENAI_MODELS = [
   { id: 'gpt-4o', name: 'GPT-4o', desc: 'Génération haute qualité, bon compromis latence/coût pour tâches complexes' },
@@ -28,7 +28,7 @@ export default function Settings() {
 
   function save() {
     if (openaiKeyLocal) setOpenAIKey(openaiKeyLocal)
-    alert((t as any).keySaved)
+    alert(t.keySaved)
   }
 
   function clearKeys() {
@@ -40,10 +40,10 @@ export default function Settings() {
     <div className="space-y-6">
       {/* Language Setting */}
       <div className="bg-black/40 backdrop-blur-xl border border-pink-500/20 rounded-2xl p-6">
-        <label className="block text-lg font-semibold text-slate-200 mb-3">🌐 {(t as any).languageLabel}</label>
+        <label className="block text-lg font-semibold text-slate-200 mb-3">🌐 {t.languageLabel}</label>
         <select
           value={language}
-          onChange={(e) => setLanguage(e.target.value as any)}
+          onChange={(e) => setLanguage(e.target.value as Language)}
           className="w-full px-4 py-3 bg-slate-900/50 border border-pink-500/30 rounded-lg text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/50 transition-all"
         >
           <option value="fr">🇫🇷 Français</option>
@@ -62,7 +62,7 @@ export default function Settings() {
 
       {/* OpenAI Key */}
       <div className="bg-black/40 backdrop-blur-xl border border-pink-500/20 rounded-2xl p-6">
-        <label className="block text-lg font-semibold text-slate-200 mb-3">🔑 {(t as any).apiKeyLabel} (OpenAI)</label>
+        <label className="block text-lg font-semibold text-slate-200 mb-3">🔑 {t.apiKeyLabel} (OpenAI)</label>
         <div className="flex gap-2 mb-2">
           <input
             type={showOpenaiKey ? 'text' : 'password'}
@@ -122,13 +122,13 @@ export default function Settings() {
           onClick={save}
           className="flex-1 px-6 py-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white rounded-lg font-bold transition-all duration-200 hover:shadow-lg hover:shadow-pink-500/50"
         >
-          💾 {(t as any).save}
+          💾 {t.save}
         </button>
         <button
           onClick={clearKeys}
           className="flex-1 px-6 py-4 bg-slate-800/50 border border-pink-500/30 hover:border-pink-500/60 text-slate-300 hover:text-pink-400 rounded-lg font-bold transition-all duration-200"
         >
-          🗑️ {(t as any).clear}
+          🗑️ {t.clear}
         </button>
       </div>
 

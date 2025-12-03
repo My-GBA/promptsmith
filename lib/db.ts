@@ -1,5 +1,12 @@
 import { sql } from '@vercel/postgres'
 
+// Vérification de la connexion DB
+function checkDbConnection() {
+  if (!process.env.POSTGRES_URL) {
+    throw new Error('POSTGRES_URL environment variable is not defined. Please check your .env.local file.')
+  }
+}
+
 export type DBAd = {
   id: string
   title: string
@@ -14,6 +21,7 @@ export type DBAd = {
 }
 
 export async function initAdsTable() {
+  checkDbConnection()
   await sql`CREATE TABLE IF NOT EXISTS advertisements (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -48,17 +56,29 @@ export async function createAd(input: Omit<DBAd, 'id'|'created_at'|'updated_at'>
 }
 
 export async function updateAd(id: string, updates: Partial<Omit<DBAd, 'id'|'created_at'|'updated_at'>>): Promise<DBAd | null> {
+  // Whitelist des champs autorisés pour éviter l'injection SQL
+  const ALLOWED_FIELDS = ['title', 'description', 'media_type', 'media_url', 'target_link', 'button_text', 'is_active']
+
   const fields: string[] = []
-  const values: any[] = []
+  const values: unknown[] = []
   let idx = 1
+
   for (const [k, v] of Object.entries(updates)) {
+    if (!ALLOWED_FIELDS.includes(k)) continue // Whitelist check
     fields.push(`${k} = $${idx++}`)
     values.push(v)
   }
+
   if (fields.length === 0) return null
-  const query = `UPDATE advertisements SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $$${idx} RETURNING *` as any
-  const { rows } = await sql.query(query, [...values, id]) as any
-  return rows[0] ?? null
+
+  const query = `UPDATE advertisements SET ${fields.join(', ')}, updated_at = NOW() WHERE id = $${idx} RETURNING *`
+
+  interface UpdateResult {
+    rows: DBAd[]
+  }
+
+  const result = await sql.query(query, [...values, id]) as unknown as UpdateResult
+  return result.rows[0] ?? null
 }
 
 export async function deleteAd(id: string): Promise<void> {

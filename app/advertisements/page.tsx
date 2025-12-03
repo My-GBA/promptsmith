@@ -67,7 +67,10 @@ export default function AdvertisementsPage() {
   const refreshAds = async () => {
     try {
       const res = await fetch('/api/ads', { cache: 'no-store' })
-      if (!res.ok) return
+      if (!res.ok) {
+        console.error('Failed to fetch ads:', res.status)
+        return
+      }
       const data = await res.json()
       const mapped = (data.ads || []).map((a: any) => ({
         id: a.id,
@@ -82,12 +85,20 @@ export default function AdvertisementsPage() {
         updatedAt: new Date(a.updated_at).getTime(),
       }))
       useStore.getState().setAdvertisements(mapped)
-    } catch {}
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+      console.error('Failed to load ads:', errorMsg)
+    }
   }
 
   // Fonction de déconnexion
   const handleLogout = async () => {
-    try { await fetch('/api/auth/logout', { method: 'POST' }) } catch {}
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Logout failed'
+      console.error('Logout error:', errorMsg)
+    }
     sessionStorage.removeItem('admin_authenticated')
     router.push('/settings')
   }
@@ -171,7 +182,10 @@ export default function AdvertisementsPage() {
         const res = await fetch(`/api/ads/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: updated.isActive }) })
         if (!res.ok) throw new Error('Toggle failed')
         await refreshAds()
-      } catch {
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : 'Toggle failed'
+        console.error('Failed to toggle ad:', errorMsg)
+        // Fallback: update client-side only
         updateAdvertisement(id, { isActive: updated.isActive })
       }
     }

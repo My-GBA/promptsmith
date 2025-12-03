@@ -30,43 +30,60 @@ function getDefaultAd() {
 
 export async function GET() {
   try {
+    // Vérifier si POSTGRES_URL est configuré
+    if (!process.env.POSTGRES_URL) {
+      console.warn('⚠️  Base de données non configurée, utilisation de la pub par défaut')
+      const fallback = getDefaultAd()
+      if (fallback) return NextResponse.json({ ads: [fallback] })
+      return NextResponse.json({ ads: [] })
+    }
+
     await initAdsTable()
     const ads = await listActiveAds()
     console.log('📊 GET /api/ads - Publicités actives dans DB:', ads.length)
-    console.log('📋 Détails des pubs:', JSON.stringify(ads, null, 2))
-    
+
     if (ads.length === 0) {
       console.log('⚠️ Aucune pub active - retour à la pub par défaut')
       const fallback = getDefaultAd()
       if (fallback) return NextResponse.json({ ads: [fallback] })
     }
-    
-    console.log('✅ Retour des pubs DB (pas de fallback)')
+
     return NextResponse.json({ ads })
   } catch (error) {
     console.error('❌ Erreur /api/ads GET:', error)
     // Retourne au moins la pub par défaut en cas d'erreur DB
     const fallback = getDefaultAd()
     if (fallback) return NextResponse.json({ ads: [fallback] })
-    return NextResponse.json({ ads: [], error: String(error) }, { status: 500 })
+    return NextResponse.json({ ads: [] })
   }
 }
 
 export async function POST(req: Request) {
   try {
-    await initAdsTable()
-    const token = cookies().get('admin_session')?.value
+    // Vérifier l'authentification
+    const cookieStore = await cookies()
+    const token = cookieStore.get('admin_session')?.value
     if (!token) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
     try { await verifyToken(token) } catch { return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 }) }
+
+    // Vérifier si la base de données est configurée
+    if (!process.env.POSTGRES_URL) {
+      return NextResponse.json({
+        ok: false,
+        error: 'Database not configured. Please set POSTGRES_URL in .env.local'
+      }, { status: 503 })
+    }
+
+    await initAdsTable()
     const body = await req.json()
-    
+
     console.log('📤 POST /api/ads - Création pub avec données:', {
       title: body.title,
       mediaType: body.mediaType,
       isActive: body.isActive,
       mediaUrlLength: body.mediaUrl?.length || 0
     })
-    
+
     const ad = await createAd({
       title: body.title,
       description: body.description,
@@ -76,7 +93,7 @@ export async function POST(req: Request) {
       button_text: body.buttonText,
       is_active: body.isActive
     })
-    
+
     console.log('✅ Pub créée avec succès, ID:', ad.id)
     return NextResponse.json({ ok: true, ad })
   } catch (error) {
