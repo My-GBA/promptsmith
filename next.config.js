@@ -1,6 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Augmente la limite de taille pour les uploads base64
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb'
+    }
+  },
+  // Configuration des routes API
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    },
+    responseLimit: '10mb'
+  },
   async headers() {
     return [
       {

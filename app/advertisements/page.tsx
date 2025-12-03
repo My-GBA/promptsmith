@@ -106,9 +106,16 @@ export default function AdvertisementsPage() {
       // Mise à jour
       try {
         const res = await fetch(`/api/ads/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
-        if (!res.ok) throw new Error('Update failed')
+        if (!res.ok) {
+          const errorText = await res.text()
+          console.error('❌ Erreur UPDATE:', res.status, errorText)
+          alert(`Erreur lors de la mise à jour: ${res.status} - ${errorText.substring(0, 100)}`)
+          throw new Error('Update failed')
+        }
         await refreshAds()
-      } catch {
+        alert('✅ Publicité mise à jour avec succès!')
+      } catch (err) {
+        console.error('❌ Exception UPDATE:', err)
         // En échec serveur, conserver au moins côté client
         updateAdvertisement(editingId, formData)
       }
@@ -116,10 +123,21 @@ export default function AdvertisementsPage() {
     } else {
       // Créer une nouvelle
       try {
+        console.log('📤 Envoi publicité, taille mediaUrl:', formData.mediaUrl.length, 'caractères')
         const res = await fetch('/api/ads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
-        if (!res.ok) throw new Error('Create failed')
+        if (!res.ok) {
+          const errorText = await res.text()
+          console.error('❌ Erreur CREATE:', res.status, errorText)
+          alert(`Erreur lors de la création: ${res.status} - ${errorText.substring(0, 200)}`)
+          throw new Error('Create failed')
+        }
+        const result = await res.json()
+        console.log('✅ Publicité créée:', result)
         await refreshAds()
-      } catch {
+        alert('✅ Publicité ajoutée avec succès!')
+      } catch (err) {
+        console.error('❌ Exception CREATE:', err)
+        alert('Erreur: ' + (err as Error).message)
         // Fallback client-only si serveur indisponible
         addAdvertisement(formData)
       }
