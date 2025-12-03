@@ -3,7 +3,10 @@ import React from 'react'
 
 export const metadata = {
   title: 'PromptSmith',
-  description: 'Générateur de prompts - PromptSmith'
+  description: 'Générateur de prompts - PromptSmith',
+  icons: {
+    icon: '/icon.svg',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
