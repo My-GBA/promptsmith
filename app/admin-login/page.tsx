@@ -90,6 +90,9 @@ export default function AdminLoginPage() {
                 </label>
                 <input
                   type="password"
+                  id="admin-password"
+                  name="password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={language === 'fr' ? 'Entrez le mot de passe' : 'Enter password'}
@@ -122,6 +125,10 @@ export default function AdminLoginPage() {
                 </label>
                 <input
                   type="text"
+                  id="2fa-code"
+                  name="code2fa"
+                  autoComplete="one-time-code"
+                  inputMode="numeric"
                   value={code2FA}
                   onChange={(e) => setCode2FA(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="000000"
