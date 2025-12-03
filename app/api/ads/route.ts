@@ -28,29 +28,42 @@ function getDefaultAd() {
 }
 
 export async function GET() {
-  await initAdsTable()
-  const ads = await listActiveAds()
-  if (ads.length === 0) {
+  try {
+    await initAdsTable()
+    const ads = await listActiveAds()
+    if (ads.length === 0) {
+      const fallback = getDefaultAd()
+      if (fallback) return NextResponse.json({ ads: [fallback] })
+    }
+    return NextResponse.json({ ads })
+  } catch (error) {
+    console.error('❌ Erreur /api/ads GET:', error)
+    // Retourne au moins la pub par défaut en cas d'erreur DB
     const fallback = getDefaultAd()
     if (fallback) return NextResponse.json({ ads: [fallback] })
+    return NextResponse.json({ ads: [], error: String(error) }, { status: 500 })
   }
-  return NextResponse.json({ ads })
 }
 
 export async function POST(req: Request) {
-  await initAdsTable()
-  const token = cookies().get('admin_session')?.value
-  if (!token) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
-  try { await verifyToken(token) } catch { return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 }) }
-  const body = await req.json()
-  const ad = await createAd({
-    title: body.title,
-    description: body.description,
-    media_type: body.mediaType,
-    media_url: body.mediaUrl,
-    target_link: body.targetLink,
-    button_text: body.buttonText,
-    is_active: body.isActive
-  })
-  return NextResponse.json({ ok: true, ad })
+  try {
+    await initAdsTable()
+    const token = cookies().get('admin_session')?.value
+    if (!token) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
+    try { await verifyToken(token) } catch { return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 }) }
+    const body = await req.json()
+    const ad = await createAd({
+      title: body.title,
+      description: body.description,
+      media_type: body.mediaType,
+      media_url: body.mediaUrl,
+      target_link: body.targetLink,
+      button_text: body.buttonText,
+      is_active: body.isActive
+    })
+    return NextResponse.json({ ok: true, ad })
+  } catch (error) {
+    console.error('❌ Erreur /api/ads POST:', error)
+    return NextResponse.json({ ok: false, error: String(error) }, { status: 500 })
+  }
 }
