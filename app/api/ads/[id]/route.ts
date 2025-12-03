@@ -28,6 +28,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 export async function DELETE(_: Request, { params }: { params: { id: string } }) {
   await initAdsTable()
   if (!(await requireAdmin())) return NextResponse.json({ ok:false, error:'Unauthorized' }, { status:401 })
+  // Ne supprime pas la publicité par défaut (fallback), c'est un artefact côté client
+  if (params.id === 'default-ad') {
+    // Répondre OK sans action pour éviter les erreurs 500 côté client
+    return NextResponse.json({ ok: true, skipped: true })
+  }
   await deleteAd(params.id)
   return NextResponse.json({ ok: true })
 }
