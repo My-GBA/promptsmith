@@ -54,13 +54,36 @@ export default function AdvertisementsPage() {
       const isAuth = sessionStorage.getItem('admin_authenticated')
       if (isAuth === 'true') {
         setIsAuthenticated(true)
-        setIsLoading(false)
+        // Après auth, charger les pubs depuis le serveur
+        refreshAds().finally(() => setIsLoading(false))
       } else {
         router.replace('/admin-login')
       }
     }
     checkAuth()
   }, [router])
+
+  // Charge les publicités depuis l'API et synchronise le store
+  const refreshAds = async () => {
+    try {
+      const res = await fetch('/api/ads', { cache: 'no-store' })
+      if (!res.ok) return
+      const data = await res.json()
+      const mapped = (data.ads || []).map((a: any) => ({
+        id: a.id,
+        title: a.title,
+        description: a.description,
+        mediaType: a.media_type,
+        mediaUrl: a.media_url,
+        targetLink: a.target_link,
+        buttonText: a.button_text,
+        isActive: a.is_active,
+        createdAt: new Date(a.created_at).getTime(),
+        updatedAt: new Date(a.updated_at).getTime(),
+      }))
+      useStore.getState().setAdvertisements(mapped)
+    } catch {}
+  }
 
   // Fonction de déconnexion
   const handleLogout = async () => {
@@ -81,13 +104,25 @@ export default function AdvertisementsPage() {
     
     if (editingId) {
       // Mise à jour
-      updateAdvertisement(editingId, formData)
-      try { await fetch(`/api/ads/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }) } catch {}
+      try {
+        const res = await fetch(`/api/ads/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
+        if (!res.ok) throw new Error('Update failed')
+        await refreshAds()
+      } catch {
+        // En échec serveur, conserver au moins côté client
+        updateAdvertisement(editingId, formData)
+      }
       setEditingId(null)
     } else {
       // Créer une nouvelle
-      addAdvertisement(formData)
-      try { await fetch('/api/ads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }) } catch {}
+      try {
+        const res = await fetch('/api/ads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) })
+        if (!res.ok) throw new Error('Create failed')
+        await refreshAds()
+      } catch {
+        // Fallback client-only si serveur indisponible
+        addAdvertisement(formData)
+      }
     }
     
     // Réinitialise le formulaire
@@ -114,8 +149,13 @@ export default function AdvertisementsPage() {
     const ad = advertisements.find(a => a.id === id)
     if (ad) {
       const updated = { ...ad, isActive: !ad.isActive }
-      updateAdvertisement(id, { isActive: updated.isActive })
-      try { await fetch(`/api/ads/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updated) }) } catch {}
+      try {
+        const res = await fetch(`/api/ads/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isActive: updated.isActive }) })
+        if (!res.ok) throw new Error('Toggle failed')
+        await refreshAds()
+      } catch {
+        updateAdvertisement(id, { isActive: updated.isActive })
+      }
     }
   }
 
@@ -414,7 +454,15 @@ export default function AdvertisementsPage() {
                         {ad.isActive ? '🔴 Désactiver' : '🟢 Activer'}
                       </button>
                       <button
-                        onClick={async () => { deleteAdvertisement(ad.id); try { await fetch(`/api/ads/${ad.id}`, { method: 'DELETE' }) } catch {} }}
+                        onClick={async () => { 
+                          try { 
+                            const res = await fetch(`/api/ads/${ad.id}`, { method: 'DELETE' }) 
+                            if (!res.ok) throw new Error('Delete failed')
+                            await refreshAds()
+                          } catch { 
+                            deleteAdvertisement(ad.id) 
+                          } 
+                        }}
                         className="flex-1 px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm rounded transition-all"
                       >
                         🗑️ Supprimer
