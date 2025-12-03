@@ -31,10 +31,16 @@ export async function GET() {
   try {
     await initAdsTable()
     const ads = await listActiveAds()
+    console.log('📊 GET /api/ads - Publicités actives dans DB:', ads.length)
+    console.log('📋 Détails des pubs:', JSON.stringify(ads, null, 2))
+    
     if (ads.length === 0) {
+      console.log('⚠️ Aucune pub active - retour à la pub par défaut')
       const fallback = getDefaultAd()
       if (fallback) return NextResponse.json({ ads: [fallback] })
     }
+    
+    console.log('✅ Retour des pubs DB (pas de fallback)')
     return NextResponse.json({ ads })
   } catch (error) {
     console.error('❌ Erreur /api/ads GET:', error)
@@ -52,6 +58,14 @@ export async function POST(req: Request) {
     if (!token) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 })
     try { await verifyToken(token) } catch { return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 }) }
     const body = await req.json()
+    
+    console.log('📤 POST /api/ads - Création pub avec données:', {
+      title: body.title,
+      mediaType: body.mediaType,
+      isActive: body.isActive,
+      mediaUrlLength: body.mediaUrl?.length || 0
+    })
+    
     const ad = await createAd({
       title: body.title,
       description: body.description,
@@ -61,6 +75,8 @@ export async function POST(req: Request) {
       button_text: body.buttonText,
       is_active: body.isActive
     })
+    
+    console.log('✅ Pub créée avec succès, ID:', ad.id)
     return NextResponse.json({ ok: true, ad })
   } catch (error) {
     console.error('❌ Erreur /api/ads POST:', error)
