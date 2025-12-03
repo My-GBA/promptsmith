@@ -14,6 +14,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [hasConfig, setHasConfig] = useState(false)
+  const OWNER_CODE = process.env.NEXT_PUBLIC_SETUP_CODE || ''
 
   // Vérifier si déjà authentifié et si config existe
   useEffect(() => {
@@ -26,10 +27,13 @@ export default function AdminLoginPage() {
     // Vérifier si les identifiants sont configurés
     const adminPassword = localStorage.getItem('admin_password')
     const admin2FA = localStorage.getItem('admin_2fa_secret')
-    
+
     if (!adminPassword || !admin2FA) {
-      // Pas de configuration, rediriger vers setup
-      router.push('/admin-setup')
+      // Pas de configuration : ne pas permettre la création sans code propriétaire
+      setError(language === 'fr' 
+        ? 'Accès refusé. Configuration admin réservée au propriétaire.'
+        : 'Access denied. Admin setup is owner-only.')
+      setHasConfig(false)
     } else {
       setHasConfig(true)
     }
@@ -89,8 +93,9 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-black to-slate-900 flex items-center justify-center p-4">
       {!hasConfig ? (
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Redirection vers la configuration...</p>
+          <div className="rounded-lg p-6 bg-red-500/10 border border-red-500/30 inline-block mb-4">🚫</div>
+          <p className="text-slate-400 max-w-sm">{language === 'fr' ? 'Accès refusé. Seul le propriétaire du site peut configurer un compte administrateur.' : 'Access denied. Only the site owner can configure an admin account.'}</p>
+          <p className="text-slate-500 text-xs mt-2">{language === 'fr' ? 'Si vous êtes le propriétaire, ouvrez /admin-setup?code=VOTRE_CODE' : 'If you are the owner, open /admin-setup?code=YOUR_CODE'}</p>
         </div>
       ) : (
         <div className="max-w-md w-full">

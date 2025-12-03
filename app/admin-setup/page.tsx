@@ -14,9 +14,8 @@ export default function AdminSetupPage() {
   const [masterPassword, setMasterPassword] = useState('')
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-
-  // Mot de passe maître pour accéder à cette page (à changer!)
-  const MASTER_PASSWORD = 'setup2024'
+  // Code propriétaire (défini via variable d'env NEXT_PUBLIC_SETUP_CODE sur Vercel)
+  const OWNER_CODE = process.env.NEXT_PUBLIC_SETUP_CODE || ''
 
   useEffect(() => {
     // Vérifier si des identifiants existent déjà (côté client uniquement)
@@ -25,20 +24,28 @@ export default function AdminSetupPage() {
       if (existingPassword) {
         setStep('check')
       }
+
+      // Garde: exiger un code de requête valide pour accéder à la configuration
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('code') || ''
+      if (!OWNER_CODE || code !== OWNER_CODE) {
+        // Bloquer l'accès si le code n'est pas correct
+        setError('Accès refusé. Code propriétaire requis.')
+      }
     }
   }, [])
 
   // Vérifier le mot de passe maître
   const handleMasterPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (masterPassword === MASTER_PASSWORD) {
+    if (OWNER_CODE && masterPassword === OWNER_CODE) {
       setStep('create')
       // Générer un nouveau secret 2FA
       const newSecret = generateSecret()
       setSecret2FA(newSecret)
       setQrCodeURL(generateQRCodeURL(newSecret))
     } else {
-      setError('Mot de passe maître incorrect')
+      setError('Code propriétaire incorrect')
     }
   }
 
@@ -144,7 +151,7 @@ export default function AdminSetupPage() {
                     required
                   />
                   <p className="text-xs text-slate-500 mt-2">
-                    Mot de passe par défaut: <code className="bg-slate-800 px-2 py-1 rounded">setup2024</code>
+                    Ce code est défini par le propriétaire du site.
                   </p>
                 </div>
 

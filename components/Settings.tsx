@@ -132,10 +132,19 @@ export default function Settings() {
         </button>
       </div>
 
-      {/* Admin Access - Discret */}
+      {/* Admin Access - Discret avec code propriétaire */}
       <div className="mt-8 text-left">
         <button
-          onClick={() => router.push('/admin-login')}
+          onClick={() => {
+            const code = prompt(language === 'fr' ? 'Entrez le code propriétaire' : 'Enter owner code') || ''
+            const OWNER_CODE = process.env.NEXT_PUBLIC_SETUP_CODE || ''
+            if (OWNER_CODE && code === OWNER_CODE) {
+              sessionStorage.setItem('owner_code_ok', 'true')
+              router.push(`/admin-login?code=${encodeURIComponent(code)}`)
+            } else {
+              alert(language === 'fr' ? 'Code incorrect' : 'Incorrect code')
+            }
+          }}
           className="text-xs text-slate-600 hover:text-slate-400 transition-colors duration-200"
         >
           administrateur
