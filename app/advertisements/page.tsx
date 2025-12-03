@@ -63,14 +63,15 @@ export default function AdvertisementsPage() {
   }, [router])
 
   // Fonction de déconnexion
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await fetch('/api/auth/logout', { method: 'POST' }) } catch {}
     sessionStorage.removeItem('admin_authenticated')
     router.push('/settings')
   }
   
   // ===== FONCTIONS =====
-  // Ajoute ou met à jour une annonce
-  const handleSubmit = (e: React.FormEvent) => {
+  // Ajoute ou met à jour une annonce (persistée côté serveur)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!formData.title || !formData.description || !formData.targetLink || !formData.mediaUrl) {
@@ -81,10 +82,12 @@ export default function AdvertisementsPage() {
     if (editingId) {
       // Mise à jour
       updateAdvertisement(editingId, formData)
+      try { await fetch(`/api/ads/${editingId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }) } catch {}
       setEditingId(null)
     } else {
       // Créer une nouvelle
       addAdvertisement(formData)
+      try { await fetch('/api/ads', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }) } catch {}
     }
     
     // Réinitialise le formulaire
@@ -107,10 +110,12 @@ export default function AdvertisementsPage() {
   }
   
   // Bascule l'état actif/inactif d'une annonce
-  const handleToggleActive = (id: string) => {
+  const handleToggleActive = async (id: string) => {
     const ad = advertisements.find(a => a.id === id)
     if (ad) {
-      updateAdvertisement(id, { isActive: !ad.isActive })
+      const updated = { ...ad, isActive: !ad.isActive }
+      updateAdvertisement(id, { isActive: updated.isActive })
+      try { await fetch(`/api/ads/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updated) }) } catch {}
     }
   }
 
@@ -409,7 +414,7 @@ export default function AdvertisementsPage() {
                         {ad.isActive ? '🔴 Désactiver' : '🟢 Activer'}
                       </button>
                       <button
-                        onClick={() => deleteAdvertisement(ad.id)}
+                        onClick={async () => { deleteAdvertisement(ad.id); try { await fetch(`/api/ads/${ad.id}`, { method: 'DELETE' }) } catch {} }}
                         className="flex-1 px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-sm rounded transition-all"
                       >
                         🗑️ Supprimer

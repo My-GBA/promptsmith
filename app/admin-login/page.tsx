@@ -58,34 +58,30 @@ export default function AdminLoginPage() {
     }, 500)
   }
 
-  // Étape 2 : Vérifier le code 2FA
+  // Étape 2 : Vérifier le code 2FA (via serveur)
   const handle2FASubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
     try {
-      const secret = localStorage.getItem('admin_2fa_secret')
-      if (!secret) {
-        setError('Configuration 2FA manquante')
-        setLoading(false)
-        return
-      }
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, code: code2FA })
+      })
 
-      // Vérifier le code TOTP
-      const isValid = await verifyTOTP(secret, code2FA)
-      
-      if (isValid) {
-        // Authentification réussie
+      if (res.ok) {
         sessionStorage.setItem('admin_authenticated', 'true')
         router.push('/ads')
       } else {
-        setError(language === 'fr' ? 'Code 2FA incorrect' : 'Incorrect 2FA code')
+        const data = await res.json().catch(() => ({ error: 'Login failed' }))
+        setError(data.error || (language === 'fr' ? 'Échec de connexion' : 'Login failed'))
       }
     } catch (err) {
       setError('Erreur lors de la vérification')
     }
-    
+
     setLoading(false)
   }
 

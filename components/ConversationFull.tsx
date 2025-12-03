@@ -63,6 +63,31 @@ export default function ConversationFull() {
   // Fonction pour obtenir l'annonce suivante et mettre à jour l'index
   const nextAdvertisement = useStore(s => s.nextAdvertisement)
 
+  // Charger les publicités globales depuis le serveur au montage
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/ads', { cache: 'no-store' })
+        const data = await res.json()
+        if (data?.ads) {
+          const mapped = data.ads.map((a: any) => ({
+            id: a.id,
+            title: a.title,
+            description: a.description,
+            mediaType: a.media_type,
+            mediaUrl: a.media_url,
+            targetLink: a.target_link,
+            buttonText: a.button_text,
+            isActive: a.is_active,
+            createdAt: new Date(a.created_at).getTime(),
+            updatedAt: new Date(a.updated_at).getTime(),
+          }))
+          useStore.getState().setAdvertisements(mapped)
+        }
+      } catch {}
+    })()
+  }, [])
+
   // ===== SUGGESTIONS MULTILINGUES =====
   // Object contenant les options pour chaque étape du workflow (traduits selon la langue)
   const suggestions = {
