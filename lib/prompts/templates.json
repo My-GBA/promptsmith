@@ -1,0 +1,14 @@
+{
+  "app-builder": {
+    "label": "Créer une application",
+    "fields": ["appType", "stack", "complexity", "constraints"]
+  },
+  "refactor": {
+    "label": "Refactor",
+    "fields": ["language", "style", "objectives"]
+  },
+  "debug": {
+    "label": "Debug",
+    "fields": ["errorDescription", "codeSnippet"]
+  }
+}

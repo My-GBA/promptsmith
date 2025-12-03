@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply antialiased;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-gradient-to-br from-slate-950 via-black to-slate-900 text-slate-100;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-900/20;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gradient-to-b from-pink-500 to-rose-500 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply from-pink-400 to-rose-400;
+}
+
+/* Neon glow effect */
+@keyframes neon-glow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(236, 72, 153, 0.5), 0 0 20px rgba(251, 113, 133, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(236, 72, 153, 0.8), 0 0 40px rgba(251, 113, 133, 0.8);
+  }
+}
+
+/* Glassmorphism background */
+@keyframes glass-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.neon-text {
+  @apply bg-gradient-to-r from-pink-400 via-rose-400 to-pink-400 bg-clip-text text-transparent;
+  animation: neon-glow 3s ease-in-out infinite;
+}
+
+.glass-effect {
+  @apply backdrop-blur-xl bg-black/30 border border-white/10;
+}
+
+.gradient-border {
+  @apply relative;
+}
+
+.gradient-border::before {
+  @apply absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 rounded-xl opacity-0 transition-opacity duration-300;
+  content: '';
+  z-index: -1;
+}
+
+.gradient-border:hover::before {
+  @apply opacity-20;
+}
+
+/* Button glow effect */
+.btn-glow {
+  @apply relative overflow-hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-glow::before {
+  @apply absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 opacity-0 transition-opacity duration-300;
+  content: '';
+  z-index: -1;
+}
+
+.btn-glow:hover::before {
+  @apply opacity-100;
+}
+
+/* Input focus glow */
+input:focus {
+  @apply ring-2 ring-pink-500/50 border-pink-500;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  @apply bg-gradient-to-b from-gray-900 via-slate-900 to-black text-slate-100;
+}
