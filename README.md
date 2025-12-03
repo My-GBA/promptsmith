@@ -55,17 +55,6 @@
 - Changement de langue en temps réel
 - Traductions complètes
 
-### 🔐 **Authentification sécurisée**
-- Système d'authentification à **double facteur (2FA)**
-- Compatible avec **Google Authenticator**
-- Protection de l'espace administrateur
-
-### 📢 **Système de publicités**
-- Gestion complète des publicités
-- Support **images** et **vidéos**
-- Upload direct de fichiers
-- Système de rotation automatique
-
 ### 📱 **Design moderne**
 - Interface 100% responsive (mobile, tablette, desktop)
 - Animations fluides avec Framer Motion
@@ -143,13 +132,6 @@ OPENAI_API_KEY=sk-votre-clé-ici
 
 > **Note :** La clé OpenAI n'est nécessaire que pour le générateur d'idées. Le reste de l'application fonctionne sans.
 
-### Configuration admin
-
-1. Lance l'application
-2. Va dans **Paramètres** (⚙️)
-3. Clique sur **"administrateur"** en bas de la page
-4. Configure ton **mot de passe** et ton **2FA** (Google Authenticator)
-
 ---
 
 ## 📱 Utilisation
@@ -162,14 +144,6 @@ OPENAI_API_KEY=sk-votre-clé-ici
 4. **Définis l'objectif** précis
 5. **Génère** le prompt optimisé
 6. **Copie** ou **exporte** le résultat
-
-### Gérer les publicités (Admin)
-
-1. Connecte-toi à l'espace admin avec ton 2FA
-2. Upload une image ou vidéo (max 5-10 MB)
-3. Ajoute titre, description et lien partenaire
-4. Active/désactive les publicités
-5. Les pubs s'affichent automatiquement après génération
 
 ---
 
@@ -185,12 +159,11 @@ OPENAI_API_KEY=sk-votre-clé-ici
 | **Tailwind CSS** | 3.4 | Framework CSS utilitaire |
 | **Framer Motion** | 10.12 | Animations fluides |
 
-### State & Auth
+### State & Storage
 
 | Technologie | Description |
 |-------------|-------------|
 | **Zustand** | Gestion d'état globale |
-| **TOTP** | Authentification 2FA |
 | **localStorage** | Persistance des données |
 
 ### API
@@ -255,24 +228,18 @@ promptsmith/
 │   ├── layout.tsx               # Layout principal
 │   ├── settings/                # Page paramètres
 │   ├── history/                 # Page historique
-│   ├── admin-login/             # Connexion admin
-│   ├── admin-setup/             # Configuration 2FA
-│   ├── advertisements/          # Gestion des pubs
 │   └── generate/                # API génération prompts
 │
 ├── 📁 components/               # Composants React réutilisables
 │   ├── ConversationFull.tsx     # Assistant de génération
 │   ├── Settings.tsx             # Paramètres utilisateur
-│   ├── AdvertisementModal.tsx   # Modal de publicité
 │   ├── IdeaGenerator.tsx        # Générateur d'idées
 │   └── ...
 │
 ├── 📁 lib/                      # Logique et utilitaires
 │   ├── store.tsx                # State global (Zustand)
-│   ├── totp.ts                  # Authentification 2FA
 │   ├── translations.ts          # Traductions FR/EN
 │   └── types/                   # Types TypeScript
-│       └── advertisement.ts     # Types des publicités
 │
 ├── 📁 styles/                   # Styles globaux
 │   └── globals.css              # CSS Tailwind + custom
@@ -290,13 +257,6 @@ promptsmith/
 
 ## 🔐 Sécurité
 
-### Authentification 2FA
-
-- Utilise **TOTP** (Time-based One-Time Password)
-- Compatible avec **Google Authenticator**, **Authy**, etc.
-- Codes temporaires de 6 chiffres qui changent toutes les 30 secondes
-- Protection de l'espace administrateur
-
 ### Stockage des données
 
 - **localStorage** : Stockage côté client uniquement
@@ -305,10 +265,9 @@ promptsmith/
 
 ### Bonnes pratiques
 
-- ✅ Change le mot de passe maître dans `/admin-setup/page.tsx` (ligne 18)
-- ✅ Active le 2FA dès la première utilisation
-- ✅ Ne partage jamais ton QR code 2FA
-- ✅ Utilise un mot de passe fort (min 8 caractères)
+- ✅ Utilise des mots de passe forts
+- ✅ Ne partage jamais tes clés API
+- ✅ Garde tes données sensibles en local
 
 ---
 
