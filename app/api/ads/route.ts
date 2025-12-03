@@ -9,7 +9,8 @@ function getDefaultAd() {
   const title = process.env.DEFAULT_AD_TITLE || 'Découvrez PromptSmith Pro'
   const description = process.env.DEFAULT_AD_DESCRIPTION || 'Créez des prompts ultra-optimisés et boostez votre productivité.'
   const mediaType = (process.env.DEFAULT_AD_MEDIA_TYPE as 'image'|'video') || 'image'
-  const mediaUrl = process.env.DEFAULT_AD_MEDIA_URL || 'https://images.unsplash.com/photo-1556767576-c452e96f22d0?w=1200&q=80&auto=format&fit=crop'
+  // Utilise une image data: URI pour éviter les problèmes CORB
+  const mediaUrl = process.env.DEFAULT_AD_MEDIA_URL || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600"%3E%3Cdefs%3E%3ClinearGradient id="grad" x1="0%25" y1="0%25" x2="100%25" y2="100%25"%3E%3Cstop offset="0%25" style="stop-color:rgb(236,72,153);stop-opacity:1" /%3E%3Cstop offset="100%25" style="stop-color:rgb(139,92,246);stop-opacity:1" /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="1200" height="600" fill="url(%23grad)" /%3E%3Ctext x="600" y="280" font-family="Arial, sans-serif" font-size="60" font-weight="bold" fill="white" text-anchor="middle"%3EPromptSmith Pro%3C/text%3E%3Ctext x="600" y="340" font-family="Arial, sans-serif" font-size="30" fill="white" text-anchor="middle" opacity="0.9"%3ECréez des prompts ultra-optimisés%3C/text%3E%3C/svg%3E'
   const targetLink = process.env.DEFAULT_AD_TARGET_LINK || 'https://promptsmith.example.com/pro'
   const buttonText = process.env.DEFAULT_AD_BUTTON_TEXT || 'En savoir plus'
 

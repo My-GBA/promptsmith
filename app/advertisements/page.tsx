@@ -233,9 +233,11 @@ export default function AdvertisementsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Titre */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Titre *</label>
+                <label htmlFor="ad-title" className="block text-sm font-semibold mb-2">Titre *</label>
                 <input
                   type="text"
+                  id="ad-title"
+                  name="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Ex: Mon Super Produit"
@@ -245,8 +247,10 @@ export default function AdvertisementsPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Description *</label>
+                <label htmlFor="ad-description" className="block text-sm font-semibold mb-2">Description *</label>
                 <textarea
+                  id="ad-description"
+                  name="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Description de la publicité"
@@ -257,8 +261,10 @@ export default function AdvertisementsPage() {
 
               {/* Type de Média */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Type de Média *</label>
+                <label htmlFor="ad-media-type" className="block text-sm font-semibold mb-2">Type de Média *</label>
                 <select
+                  id="ad-media-type"
+                  name="mediaType"
                   value={formData.mediaType}
                   onChange={(e) => setFormData({ ...formData, mediaType: e.target.value as 'image' | 'video' })}
                   className="w-full px-4 py-2 bg-slate-900/50 border border-pink-500/30 rounded-lg text-white focus:outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-500/50"
@@ -270,11 +276,13 @@ export default function AdvertisementsPage() {
 
               {/* Upload Média */}
               <div>
-                <label className="block text-sm font-semibold mb-2">
+                <label htmlFor="ad-media-file" className="block text-sm font-semibold mb-2">
                   {formData.mediaType === 'image' ? '📤 Upload Image' : '📤 Upload Vidéo'} *
                 </label>
                 <input
                   type="file"
+                  id="ad-media-file"
+                  name="mediaFile"
                   accept={formData.mediaType === 'image' ? 'image/*' : 'video/*'}
                   onChange={(e) => {
                     const file = e.target.files?.[0]
@@ -332,9 +340,11 @@ export default function AdvertisementsPage() {
 
               {/* Lien Cible */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Lien Cible (URL) *</label>
+                <label htmlFor="ad-target-link" className="block text-sm font-semibold mb-2">Lien Cible (URL) *</label>
                 <input
                   type="url"
+                  id="ad-target-link"
+                  name="targetLink"
                   value={formData.targetLink}
                   onChange={(e) => setFormData({ ...formData, targetLink: e.target.value })}
                   placeholder="https://monpartenaire.com"
@@ -344,9 +354,11 @@ export default function AdvertisementsPage() {
 
               {/* Texte Bouton */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Texte du Bouton</label>
+                <label htmlFor="ad-button-text" className="block text-sm font-semibold mb-2">Texte du Bouton</label>
                 <input
                   type="text"
+                  id="ad-button-text"
+                  name="buttonText"
                   value={formData.buttonText}
                   onChange={(e) => setFormData({ ...formData, buttonText: e.target.value })}
                   placeholder="Cliquez ici"
@@ -359,6 +371,7 @@ export default function AdvertisementsPage() {
                 <input
                   type="checkbox"
                   id="isActive"
+                  name="isActive"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                   className="w-4 h-4"
