@@ -67,8 +67,10 @@ export default function ConversationFull() {
   React.useEffect(() => {
     (async () => {
       try {
+        console.log('🔍 Chargement des publicités depuis /api/ads...')
         const res = await fetch('/api/ads', { cache: 'no-store' })
         const data = await res.json()
+        console.log('📦 Données reçues de /api/ads:', data)
         if (data?.ads) {
           const mapped = data.ads.map((a: any) => ({
             id: a.id,
@@ -82,9 +84,14 @@ export default function ConversationFull() {
             createdAt: new Date(a.created_at).getTime(),
             updatedAt: new Date(a.updated_at).getTime(),
           }))
+          console.log('✅ Publicités mappées:', mapped)
           useStore.getState().setAdvertisements(mapped)
+        } else {
+          console.log('⚠️ Aucune publicité dans la réponse')
         }
-      } catch {}
+      } catch (err) {
+        console.error('❌ Erreur lors du chargement des publicités:', err)
+      }
     })()
   }, [])
 
@@ -222,8 +229,12 @@ export default function ConversationFull() {
           
           // AFFICHE L'ANNONCE PUBLICITAIRE SI ELLE EXISTE
           const ad = nextAdvertisement()
+          console.log('🎯 Tentative d\'affichage de publicité:', ad)
           if (ad) {
+            console.log('✅ Publicité à afficher:', ad)
             setCurrentAdvertisement(ad)
+          } else {
+            console.log('⚠️ Aucune publicité disponible (nextAdvertisement retourne null)')
           }
           
           // Add to history
